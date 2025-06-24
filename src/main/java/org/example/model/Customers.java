@@ -1,31 +1,21 @@
 package org.example.model;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.Observable;
+import java.util.Observer;
 
-public class Customers {
-    private static Customers instance;
-    private List<Customer> customerList = null;
+public class Customers extends Observable implements Observer {
 
-    private Customers() { }
+    private static final Customers INSTANCE = new Customers();
+    public static Customers getInstance() { return INSTANCE; }
+    private Customers() { loadCustomers(); }
 
-    public static Customers getInstance() {
-        if (instance == null) {
-            instance = new Customers();
-        }
-        return instance;
-    }
+    private final List<Customer> cache = new ArrayList<>();
+    public List<Customer> getAllCustomers() { return Collections.unmodifiableList(cache); }
 
-    public List<Customer> getAllCustomers() {
-        if (customerList == null) {
-            loadCustomers();
-        }
-        return customerList;
-    }
 
     private void loadCustomers() {
-        customerList = new ArrayList<>();
         try {
             Connection conn = DatabaseConnection.getInstance().getConnection();
             Statement stmt = conn.createStatement();
@@ -38,10 +28,13 @@ public class Customers {
                 customer.setPhone(rs.getString("phone"));
                 customer.setAddress(rs.getString("address"));
                 customer.setContactPerson(rs.getString("contact_person"));
-                customerList.add(customer);
+                cache.add(customer);
             }
             rs.close();
             stmt.close();
+
+            setChanged();
+            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -66,9 +59,12 @@ public class Customers {
             }
             rs.close();
             pstmt.close();
-            if (customerList != null) {
-                customerList.add(customer);
+            if (cache != null) {
+                cache.add(customer);
             }
+
+            setChanged();
+            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -88,14 +84,17 @@ public class Customers {
             pstmt.setInt(6, customer.getId());
             pstmt.executeUpdate();
             pstmt.close();
-            if (customerList != null) {
-                for (int i = 0; i < customerList.size(); i++) {
-                    if (customerList.get(i).getId() == customer.getId()) {
-                        customerList.set(i, customer);
+            if (cache != null) {
+                for (int i = 0; i < cache.size(); i++) {
+                    if (cache.get(i).getId() == customer.getId()) {
+                        cache.set(i, customer);
                         break;
                     }
                 }
             }
+
+            setChanged();
+            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -108,19 +107,22 @@ public class Customers {
             pstmt.setInt(1, id);
             pstmt.executeUpdate();
             pstmt.close();
-            if (customerList != null) {
-                customerList.removeIf(customer -> customer.getId() == id);
+            if (cache != null) {
+                cache.removeIf(customer -> customer.getId() == id);
             }
+
+            setChanged();
+            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
     public Customer getCustomerById(int id) {
-        if (customerList == null) {
+        if (cache == null) {
             loadCustomers();
         }
-        for (Customer customer : customerList) {
+        for (Customer customer : cache) {
             if (customer.getId() == id) {
                 return customer;
             }
@@ -128,8 +130,11 @@ public class Customers {
         return null;
     }
 
-    public void refresh() {
-        customerList = null;
-        loadCustomers();
+    @Override public void update(Observable o, Object arg) {
+        setChanged();
+        notifyObservers(arg);
     }
+
+    public enum Type { ADD, UPDATE, DELETE, RELOAD }
+    public record RepoEvent<T>(Type type, T payload) { }
 }

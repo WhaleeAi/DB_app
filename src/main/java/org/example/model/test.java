@@ -26,11 +26,11 @@ public class test {
 
             Product newProduct = new Product();
             newProduct.setName("Тестовый продукт");
-            newProduct.setRetailPrice(new BigDecimal("99.99"));
-            newProduct.setWholesalePrice(new BigDecimal("79.99"));
+            newProduct.setRetailPrice(99.99);
+            newProduct.setWholesalePrice(99.99);
             newProduct.setDescription("Это тестовый продукт.");
 
-            Products.getInstance().addProduct(newProduct);
+            Products.getInstance().addOrUpdateProduct(newProduct);
 
             List<Product> productss = Products.getInstance().getAllProducts();
             boolean found = false;

@@ -1,30 +1,15 @@
 package org.example;
-import java.sql.*;
 
-public class Main {
-    public static void main(String[] args){
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection connection = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/company_kurs", "root", "");
-            Statement statement = connection.createStatement();
-            String query = "SELECT * FROM product";
-            ResultSet result = statement.executeQuery(query);
-            while(result.next()){
-                int id = result.getInt("id");
-                String name = result.getString("name");
-                String short_name = result.getString("retail_price");
-                System.out.print("Vacant post: ");
-                System.out.print("id = " + id);
-                System.out.print(", name = \"" + name + "\"");
-                System.out.println(", short name = \"" +
-                        short_name + "\".");
-            }
-            connection.close();
-        }
-        catch(Exception e){
-            System.out.println(e);
-        }
+import javafx.application.Application;
+import javafx.stage.Stage;
+import org.example.controller.LoginController;
 
+public class Main extends Application {
+    @Override
+    public void start(Stage stage){
+        new LoginController(stage);      // всё покажется само
+        stage.setTitle("CRM-Demo");
+        stage.show();
     }
+    public static void main(String[] args) { launch(args); }
 }

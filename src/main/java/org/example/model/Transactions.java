@@ -1,136 +1,67 @@
 package org.example.model;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Date;
+import java.util.*;
+import java.util.Observable;
+import java.util.Observer;
 
-public class Transactions {
-    private static Transactions instance;
-    private List<Transaction> transactionList = null;
+public final class Transactions extends Observable implements Observer {
 
-    private Transactions() { }
+    private static final Transactions INSTANCE = new Transactions();
+    public static Transactions getInstance() { return INSTANCE; }
 
-    public static Transactions getInstance() {
-        if (instance == null) {
-            instance = new Transactions();
-        }
-        return instance;
+    private final List<Transaction> cache = new ArrayList<>();
+
+    private Transactions() { loadHistory(); }
+
+    /* ---------------- PUBLIC ---------------- */
+
+    public List<Transaction> getAll() { return Collections.unmodifiableList(cache); }
+
+    public void addTransaction(Transaction t) {
+        String sql = "INSERT INTO transactions (date, total_qty, total_sum) VALUES (?,?,?)";
+        try (Connection c = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setDate (1, Date.valueOf(t.getTransactionDate()));
+            ps.setInt  (2, t.getTotalQuantity());
+            ps.setDouble(3, t.getTotalAmount());
+            ps.executeUpdate();
+
+            try (ResultSet k = ps.getGeneratedKeys()) { if (k.next()) t.setId(k.getInt(1)); }
+            cache.add(t);
+
+            setChanged(); notifyObservers(new RepoEvent<>(Type.ADD,t));
+
+        } catch (SQLException e){ e.printStackTrace();}
     }
 
-    public List<Transaction> getAllTransactions() {
-        if (transactionList == null) {
-            loadTransactions();
-        }
-        return transactionList;
-    }
+    /* ---------------- JDBC ---------------- */
+    private void loadHistory() {
+        cache.clear();
+        String sql = "SELECT id, date, total_qty, total_sum FROM transactions ORDER BY date DESC";
+        try (Connection c = DatabaseConnection.getInstance().getConnection();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
 
-    private void loadTransactions() {
-        transactionList = new ArrayList<>();
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM transaction");
-            while (rs.next()) {
-                Transaction transaction = new Transaction();
-                transaction.setId(rs.getInt("id"));
-                transaction.setDiscountId(rs.getObject("discount_id") != null ? rs.getInt("discount_id") : null);
-                transaction.setCustomerId(rs.getInt("customer_id"));
-                transaction.setTotalQuantity(rs.getInt("total_quantity"));
-                transaction.setTransactionDate(rs.getDate("transaction_date").toLocalDate());
-                transaction.setTotalAmount(rs.getBigDecimal("total_amount"));
-                transactionList.add(transaction);
+            while (rs.next()){
+                Transaction t = new Transaction();
+                t.setId            (rs.getInt   ("id"));
+                t.setTransactionDate          (rs.getDate  ("date").toLocalDate());
+                t.setTotalQuantity (rs.getInt   ("total_qty"));
+                t.setTotalAmount      (rs.getDouble("total_sum"));
+                cache.add(t);
             }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            setChanged(); notifyObservers(new RepoEvent<>(Type.RELOAD,null));
+        } catch (SQLException e){ e.printStackTrace();}
     }
 
-    public void addTransaction(Transaction transaction) {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(
-                    "INSERT INTO transaction (discount_id, customer_id, total_quantity, transaction_date, total_amount) VALUES (?, ?, ?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            pstmt.setObject(1, transaction.getDiscountId());
-            pstmt.setInt(2, transaction.getCustomerId());
-            pstmt.setInt(3, transaction.getTotalQuantity());
-            pstmt.setDate(4, Date.valueOf(transaction.getTransactionDate()));
-            pstmt.setBigDecimal(5, transaction.getTotalAmount());
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if (rs.next()) {
-                transaction.setId(rs.getInt(1));
-            }
-            rs.close();
-            pstmt.close();
-            if (transactionList != null) {
-                transactionList.add(transaction);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    /* ---------- proxy ---------- */
+    @Override public void update(Observable o,Object arg){
+        setChanged(); notifyObservers(arg);
     }
 
-    public void updateTransaction(Transaction transaction) {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(
-                    "UPDATE transaction SET discount_id = ?, customer_id = ?, total_quantity = ?, transaction_date = ?, total_amount = ? WHERE id = ?"
-            );
-            pstmt.setObject(1, transaction.getDiscountId());
-            pstmt.setInt(2, transaction.getCustomerId());
-            pstmt.setInt(3, transaction.getTotalQuantity());
-            pstmt.setDate(4, Date.valueOf(transaction.getTransactionDate()));
-            pstmt.setBigDecimal(5, transaction.getTotalAmount());
-            pstmt.setInt(6, transaction.getId());
-            pstmt.executeUpdate();
-            pstmt.close();
-            if (transactionList != null) {
-                for (int i = 0; i < transactionList.size(); i++) {
-                    if (transactionList.get(i).getId() == transaction.getId()) {
-                        transactionList.set(i, transaction);
-                        break;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void deleteTransaction(int id) {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement pstmt = conn.prepareStatement("DELETE FROM transaction WHERE id = ?");
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-            pstmt.close();
-            if (transactionList != null) {
-                transactionList.removeIf(transaction -> transaction.getId() == id);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Transaction getTransactionById(int id) {
-        if (transactionList == null) {
-            loadTransactions();
-        }
-        for (Transaction transaction : transactionList) {
-            if (transaction.getId() == id) {
-                return transaction;
-            }
-        }
-        return null;
-    }
-
-    public void refresh() {
-        transactionList = null;
-        loadTransactions();
-    }
+    public enum Type { ADD, UPDATE, DELETE, RELOAD }
+    public record RepoEvent<T>(Type type, T payload) { }
 }

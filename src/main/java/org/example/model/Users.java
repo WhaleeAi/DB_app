@@ -1,130 +1,111 @@
 package org.example.model;
 
 import java.sql.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.Observable;   // <—- Java 9+: добавьте --add-opens при запуске
+import java.util.Observer;
 
-public class Users {
-    private static Users instance;
-    private List<User> userList = null;
+public class Users extends Observable implements Observer {
 
-    private Users() { }
+    /* ---------- Singleton ---------- */
+    private static final Users INSTANCE = new Users();
+    public static Users getInstance() { return INSTANCE; }
+    private Users() { loadUsers(); }
 
-    public static Users getInstance() {
-        if (instance == null) {
-            instance = new Users();
-        }
-        return instance;
-    }
+    /* ---------- Данные в памяти ---------- */
+    private final List<User> cache = new ArrayList<>();
 
-    public List<User> getAllUsers() {
-        if (userList == null) {
-            loadUsers();
-        }
-        return userList;
-    }
+    public List<User> getAllUsers() { return Collections.unmodifiableList(cache); }
 
+    /* ---------- Загрузка всего списка ---------- */
     private void loadUsers() {
-        userList = new ArrayList<>();
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM user");
+        cache.clear();
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             Statement  st   = conn.createStatement();
+             ResultSet  rs   = st.executeQuery("SELECT * FROM user")) {
+
             while (rs.next()) {
-                User user = new User();
-                user.setId(rs.getInt("id"));
-                user.setLogin(rs.getString("login"));
-                user.setPassword(rs.getString("password"));
-                user.setRole(rs.getString("role"));
-                userList.add(user);
+                User u = new User();
+                u.setId(rs.getInt("id"));
+                u.setLogin(rs.getString("login"));
+                u.setPassword(rs.getString("password"));
+                u.setRole(rs.getString("role"));
+                cache.add(u);
             }
-            rs.close();
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+            /* событие RELOAD */
+            setChanged();
+            notifyObservers(new RepoEvent<>(Type.RELOAD, null));
+
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public void addUser(User user) {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(
-                    "INSERT INTO user (login, password, role) VALUES (?, ?, ?)",
-                    Statement.RETURN_GENERATED_KEYS
-            );
-            pstmt.setString(1, user.getLogin());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getRole());
-            pstmt.executeUpdate();
-            ResultSet rs = pstmt.getGeneratedKeys();
-            if (rs.next()) {
-                user.setId(rs.getInt(1));
-            }
-            rs.close();
-            pstmt.close();
-            if (userList != null) {
-                userList.add(user);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    /* ---------- CRUD ---------- */
+    public void addUser(User u) {
+        String sql = "INSERT INTO user (login, password, role) VALUES (?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            ps.setString(1, u.getLogin());
+            ps.setString(2, u.getPassword());
+            ps.setString(3, u.getRole());
+            ps.executeUpdate();
+
+            try (ResultSet keys = ps.getGeneratedKeys()) { if (keys.next()) u.setId(keys.getInt(1)); }
+
+            cache.add(u);
+            /* событие ADD */
+            setChanged();
+            notifyObservers(new RepoEvent<>(Type.ADD, u));
+
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public void updateUser(User user) {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(
-                    "UPDATE user SET login = ?, password = ?, role = ? WHERE id = ?"
-            );
-            pstmt.setString(1, user.getLogin());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getRole());
-            pstmt.setInt(4, user.getId());
-            pstmt.executeUpdate();
-            pstmt.close();
-            if (userList != null) {
-                for (int i = 0; i < userList.size(); i++) {
-                    if (userList.get(i).getId() == user.getId()) {
-                        userList.set(i, user);
-                        break;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public void updateUser(User u) {
+        String sql = "UPDATE user SET login=?, password=?, role=? WHERE id=?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, u.getLogin());
+            ps.setString(2, u.getPassword());
+            ps.setString(3, u.getRole());
+            ps.setInt   (4, u.getId());
+            ps.executeUpdate();
+
+            /* заменяем объект в кеше */
+            for (int i = 0; i < cache.size(); i++)
+                if (cache.get(i).getId() == u.getId()) { cache.set(i, u); break; }
+
+            /* событие UPDATE */
+            setChanged();
+            notifyObservers(new RepoEvent<>(Type.UPDATE, u));
+
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
     public void deleteUser(int id) {
-        try {
-            Connection conn = DatabaseConnection.getInstance().getConnection();
-            PreparedStatement pstmt = conn.prepareStatement("DELETE FROM user WHERE id = ?");
-            pstmt.setInt(1, id);
-            pstmt.executeUpdate();
-            pstmt.close();
-            if (userList != null) {
-                userList.removeIf(user -> user.getId() == id);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        String sql = "DELETE FROM user WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            ps.executeUpdate();
+
+            cache.removeIf(u -> u.getId() == id);
+            /* событие DELETE */
+            setChanged();
+            notifyObservers(new RepoEvent<>(Type.DELETE, id));
+
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    public User getUserById(int id) {
-        if (userList == null) {
-            loadUsers();
-        }
-        for (User user : userList) {
-            if (user.getId() == id) {
-                return user;
-            }
-        }
-        return null;
+    /* ---------- Observer ---------- */
+    @Override public void update(Observable src, Object arg) {
+        /* Если когда-нибудь User станет Observable, проксируем его события */
+        setChanged();
+        notifyObservers(arg);  // пересылаем наверх
     }
 
-    public void refresh() {
-        userList = null;
-        loadUsers();
-    }
+    /* ---------- Вспомогательное ---------- */
+    public enum Type { ADD, UPDATE, DELETE, RELOAD }
+    public record RepoEvent<T>(Type type, T payload) { }
 }

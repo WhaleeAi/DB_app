@@ -9,11 +9,11 @@ public class Transaction {
     private int customerId;
     private int totalQuantity;
     private LocalDate transactionDate;
-    private BigDecimal totalAmount;
+    private double totalAmount;
 
     public Transaction() { }
 
-    public Transaction(int id, Integer discountId, int customerId, int totalQuantity, LocalDate transactionDate, BigDecimal totalAmount) {
+    public Transaction(int id, Integer discountId, int customerId, int totalQuantity, LocalDate transactionDate, double totalAmount) {
         this.id = id;
         this.discountId = discountId;
         this.customerId = customerId;
@@ -37,6 +37,6 @@ public class Transaction {
     public LocalDate getTransactionDate() { return transactionDate; }
     public void setTransactionDate(LocalDate transactionDate) { this.transactionDate = transactionDate; }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public double getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
 }
