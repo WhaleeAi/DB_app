@@ -16,9 +16,15 @@ public final class Transactions {
 
     /** создаём «черновик» (status=DRAFT) — возвращаем id */
     public int createDraft() {
-        String sql = "INSERT INTO transactions (status) VALUES ('DRAFT')";
+        String sql = """
+    INSERT INTO transactions
+        (customer_id, total_quantity, transaction_date, total_amount, status)
+        VALUES (0, 0, ?, 0, 'DRAFT')
+    """;
+
         try (Connection c = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setDate  (3, Date.valueOf(LocalDate.now()));
 
             ps.executeUpdate();
             try (ResultSet k = ps.getGeneratedKeys()) {
