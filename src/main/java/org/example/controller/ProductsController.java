@@ -10,63 +10,65 @@ import java.util.Map;
 
 public class ProductsController {
 
-    /* Singleton-контроллер — чтобы QuantityCell могла обращаться */
     private static ProductsController INSTANCE;
-    public static ProductsController getInstance() { return INSTANCE; }
+    public  static ProductsController getInstance(){ return INSTANCE; }
 
     private final Stage stage;
     private final ProductsView view;
 
-    private final Products             prodRepo   = Products.getInstance();
-    private final TransactionProducts  cartRepo   = TransactionProducts.getInstance();
+    private final Products            prodRepo = Products.getInstance();
+    private final TransactionProducts cartRepo = TransactionProducts.getInstance();
+    private final Transactions        txRepo   = Transactions.getInstance();
 
-    /* локальный кэш «productId -> qty» для быстрого доступа */
-    private final Map<Integer,Integer> qtyMap = new HashMap<>();
+    /* productId -> qty выбранное на экране товаров */
+    private final Map<Integer,Integer> qtyBuffer = new HashMap<>();
+
+    /* текущий «черновик» заказа */
+    private Integer draftId = null;
 
     public ProductsController(Stage stage) {
         INSTANCE = this;
         this.stage = stage;
         this.view  = new ProductsView();
 
-        initData();
+        view.table().setItems(
+                FXCollections.observableArrayList(prodRepo.getAllProducts()));
+
         bindHandlers();
 
         stage.setScene(view.getScene());
         stage.show();
     }
 
-    /* --------------------------- DATA --------------------------- */
-    private void initData() {
-        view.table().setItems(
-                FXCollections.observableArrayList(prodRepo.getAllProducts()));
-
-        /* если корзина уже есть (вернулись со страницы Cart) */
-        cartRepo.getAll().forEach(tp -> qtyMap.put(tp.getProductId(), tp.getQuantity()));
-    }
-
-    /* ------------------------- HANDLERS ------------------------- */
-    private void bindHandlers() {
-        view.btnCart().setOnAction(e -> new CartController(stage));
-        // btnProducts – активна, ничего не делает
-    }
-
-    /* ----------------- методы для QuantityCell ------------------ */
+    /* ---------------- плюс / минус ---------------- */
     public void updateQuantity(Product p, int delta) {
-        int current = qtyMap.getOrDefault(p.getId(), 0);
-        int newQty  = Math.max(0, current + delta);
-
-        if (newQty == 0) {
-            qtyMap.remove(p.getId());
-            cartRepo.removeByProduct(p.getId());
-        } else {
-            qtyMap.put(p.getId(), newQty);
-            cartRepo.addOrUpdate(p, newQty);          // создаём/обновляем позицию
-        }
-        /* перерисовать строку */
+        int q = Math.max(0, qtyBuffer.getOrDefault(p.getId(),0) + delta);
+        if (q == 0) qtyBuffer.remove(p.getId()); else qtyBuffer.put(p.getId(), q);
         view.table().refresh();
     }
+    public int getQuantity(Product p){ return qtyBuffer.getOrDefault(p.getId(),0); }
 
-    public int getQuantity(Product p) {
-        return qtyMap.getOrDefault(p.getId(), 0);
+    /* ---------------- кнопки ---------------- */
+    private void bindHandlers() {
+        view.btnAddToCart().setOnAction(e -> handleAddToCart());
+        view.btnCart()     .setOnAction(e -> {
+            if (draftId != null) new CartController(stage, draftId);
+        });
+    }
+
+    private void handleAddToCart() {
+        if (qtyBuffer.isEmpty()) return;
+
+        if (draftId == null) draftId = txRepo.createDraft();   // создаём запись DRAFT
+
+        qtyBuffer.forEach((pid, qty) -> {
+            Product p = prodRepo.getAllProducts().stream()
+                    .filter(pr -> pr.getId()==pid).findFirst().orElse(null);
+            if (p != null) cartRepo.insert(draftId, p, qty);
+        });
+
+        qtyBuffer.clear();
+        view.table().refresh();
+        new CartController(stage, draftId);
     }
 }

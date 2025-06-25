@@ -1,42 +1,53 @@
 package org.example.model;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
+/**
+ * Модель одного заказа (transaction).
+ * Используется как «черновик» (status = "DRAFT") до момента покупки
+ * и как финальный заказ (status = "DONE") после оплаты.
+ */
 public class Transaction {
-    private int id;
-    private Integer discountId;
-    private int customerId;
-    private int totalQuantity;
-    private LocalDate transactionDate;
-    private double totalAmount;
 
+    private int id;                     // PK
+    private LocalDate date;             // дата оформления (null, пока черновик)
+    private int totalQuantity;          // общее количество всех позиций
+    private double totalSum;            // итоговая сумма со скидкой
+    private String status;              // "DRAFT" | "DONE"
+
+    /* ---------- конструкторы ---------- */
     public Transaction() { }
 
-    public Transaction(int id, Integer discountId, int customerId, int totalQuantity, LocalDate transactionDate, double totalAmount) {
-        this.id = id;
-        this.discountId = discountId;
-        this.customerId = customerId;
+    public Transaction(LocalDate date, int totalQuantity,
+                       double totalSum, String status) {
+        this.date = date;
         this.totalQuantity = totalQuantity;
-        this.transactionDate = transactionDate;
-        this.totalAmount = totalAmount;
+        this.totalSum = totalSum;
+        this.status = status;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    /* ---------- getters ---------- */
+    public int        getId()            { return id; }
+    public LocalDate  getDate()          { return date; }
+    public int        getTotalQuantity() { return totalQuantity; }
+    public double     getTotalSum()      { return totalSum; }
+    public String     getStatus()        { return status; }
 
-    public Integer getDiscountId() { return discountId; }
-    public void setDiscountId(Integer discountId) { this.discountId = discountId; }
+    /* ---------- setters ---------- */
+    public void setId(int id)                         { this.id = id; }
+    public void setDate(LocalDate date)               { this.date = date; }
+    public void setTotalQuantity(int totalQuantity)   { this.totalQuantity = totalQuantity; }
+    public void setTotalSum(double totalSum)          { this.totalSum = totalSum; }
+    public void setStatus(String status)              { this.status = status; }
 
-    public int getCustomerId() { return customerId; }
-    public void setCustomerId(int customerId) { this.customerId = customerId; }
-
-    public int getTotalQuantity() { return totalQuantity; }
-    public void setTotalQuantity(int totalQuantity) { this.totalQuantity = totalQuantity; }
-
-    public LocalDate getTransactionDate() { return transactionDate; }
-    public void setTransactionDate(LocalDate transactionDate) { this.transactionDate = transactionDate; }
-
-    public double getTotalAmount() { return totalAmount; }
-    public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
+    /* ---------- удобный toString() ---------- */
+    @Override public String toString() {
+        return "Transaction{" +
+                "id=" + id +
+                ", date=" + date +
+                ", totalQuantity=" + totalQuantity +
+                ", totalSum=" + totalSum +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }

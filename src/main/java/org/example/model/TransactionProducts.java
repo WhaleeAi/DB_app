@@ -1,150 +1,87 @@
 package org.example.model;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 import java.util.Observable;
-import java.util.Observer;
 
-/**
- * Корзина текущего клиента: позиции из transaction_products
- * со status = 'CART' (или transaction_id IS NULL – как удобно).
- */
-public final class TransactionProducts extends Observable implements Observer {
+public final class TransactionProducts extends Observable {
 
     private static final TransactionProducts INSTANCE = new TransactionProducts();
     public static TransactionProducts getInstance() { return INSTANCE; }
 
+    /* кеш всех позиций текущей сессии приложения */
     private final List<TransactionProduct> cache = new ArrayList<>();
 
-    private TransactionProducts() { loadCart(); }
+    private TransactionProducts() { /* лениво; не грузим при старте */ }
 
-    /* ---------------- PUBLIC ---------------- */
+    /* ---------- API ---------- */
 
-    public List<TransactionProduct> getAll() {
-        return Collections.unmodifiableList(cache);
+    public List<TransactionProduct> getAll() { return Collections.unmodifiableList(cache); }
+
+    public List<TransactionProduct> getByTransaction(int txId) {
+        return cache.stream().filter(tp -> tp.getTransactionId() == txId).toList();
     }
 
-    /** +1 / -1 / любое qty. Если qty==0 → удаляем. */
-    public void addOrUpdate(Product p, int qty) {
-        double unit = (qty > 5) ? p.getWholesalePrice() : p.getRetailPrice();
+    /** вставка НОВОЙ позиции под конкретный transaction_id */
+    public void insert(int txId, Product p, int qty) {
+        double unit = (qty > 5 ? p.getWholesalePrice() : p.getRetailPrice());
+        double sum  = unit * qty;
 
-        TransactionProduct tp = cache.stream()
-                .filter(t -> t.getProductId() == p.getId())
-                .findFirst()
-                .orElse(null);
-
-        if (tp == null) {
-            tp = new TransactionProduct(p.getId(), p.getName(), qty, unit);
-            insert(tp);           // ваш метод INSERT в БД + cache.add(tp) + notify
-        } else {
-            tp.setQuantity(qty);
-            tp.setUnitPrice(unit);
-            update(tp);           // ваш метод UPDATE в БД + notify
-        }
-    }
-
-
-    public void removeByProduct(int productId) {
-        cache.stream()
-                .filter(tp -> tp.getProductId()==productId)
-                .findFirst()
-                .ifPresent(this::delete);
-    }
-
-    public void clear() {
-        String sql = "DELETE FROM transaction_products WHERE status='CART'";
-        try (Connection c = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.executeUpdate();
-            cache.clear();
-            setChanged(); notifyObservers(new RepoEvent<>(Type.RELOAD,null));
-        } catch (SQLException e){ e.printStackTrace();}
-    }
-
-    /* ---------------- JDBC ---------------- */
-
-    private void loadCart() {
-        cache.clear();
-        String sql = """
-            SELECT tp.product_id, p.name, tp.quantity,
-                   tp.unit_price, tp.total_price
-              FROM transaction_products tp
-              JOIN product p ON p.id = tp.product_id
-             WHERE tp.status = 'CART'""";
-        try (Connection c = DatabaseConnection.getInstance().getConnection();
-             Statement st = c.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
-            while (rs.next()) {
-                TransactionProduct tp = new TransactionProduct();
-                tp.setProductId (rs.getInt("product_id"));
-                tp.setProductName(rs.getString("name"));
-                tp.setQuantity  (rs.getInt("quantity"));
-                tp.setUnitPrice (rs.getDouble("unit_price"));
-                tp.setTotalPrice(rs.getDouble("total_price"));
-                cache.add(tp);
-            }
-            setChanged(); notifyObservers(new RepoEvent<>(Type.RELOAD,null));
-        } catch (SQLException e){ e.printStackTrace(); }
-    }
-
-    private void insert(TransactionProduct tp){
         String sql = """
             INSERT INTO transaction_products
-            (product_id, quantity, unit_price, total_price, status)
-            VALUES (?,?,?,?, 'CART')""";
+            (transaction_id, product_id, quantity, unit_price, total_price)
+            VALUES (?,?,?,?,?)""";
         try (Connection c = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
+             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            ps.setInt   (1, tp.getProductId());
-            ps.setInt   (2, tp.getQuantity());
-            ps.setDouble(3, tp.getUnitPrice());
-            ps.setDouble(4, tp.getTotalPrice());
+            ps.setInt   (1, txId);
+            ps.setInt   (2, p.getId());
+            ps.setInt   (3, qty);
+            ps.setDouble(4, unit);
+            ps.setDouble(5, sum);
             ps.executeUpdate();
 
+            int id = 0;
+            try (ResultSet k = ps.getGeneratedKeys()) { if (k.next()) id = k.getInt(1); }
+
+            TransactionProduct tp = new TransactionProduct(p.getId(), p.getName(), qty, unit);
+            tp.setId(id);
+            tp.setTransactionId(txId);
             cache.add(tp);
-            setChanged(); notifyObservers(new RepoEvent<>(Type.ADD,tp));
 
-        } catch (SQLException e){ e.printStackTrace();}
+            setChanged(); notifyObservers(new RepoEvent<>(Type.ADD, tp));
+
+        } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    private void update(TransactionProduct tp){
-        String sql = """
-            UPDATE transaction_products
-               SET quantity=?, unit_price=?, total_price=?
-             WHERE product_id=? AND status='CART'""";
+    /** удалить одну позицию из корзины */
+    public void remove(int txId, int productId) {
+        cache.removeIf(tp -> tp.getTransactionId() == txId && tp.getProductId() == productId);
+
+        String sql = "DELETE FROM transaction_products WHERE transaction_id=? AND product_id=?";
         try (Connection c = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-
-            ps.setInt   (1, tp.getQuantity());
-            ps.setDouble(2, tp.getUnitPrice());
-            ps.setDouble(3, tp.getTotalPrice());
-            ps.setInt   (4, tp.getProductId());
+            ps.setInt(1, txId); ps.setInt(2, productId);
             ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
 
-            setChanged(); notifyObservers(new RepoEvent<>(Type.UPDATE,tp));
-
-        } catch (SQLException e){ e.printStackTrace();}
+        setChanged(); notifyObservers(new RepoEvent<>(Type.DELETE, productId));
     }
 
-    private void delete(TransactionProduct tp){
-        String sql = "DELETE FROM transaction_products WHERE product_id=? AND status='CART'";
+    /** очистить корзину после покупки / отмены */
+    public void clearByTransaction(int txId) {
+        cache.removeIf(tp -> tp.getTransactionId() == txId);
+        String sql = "DELETE FROM transaction_products WHERE transaction_id=?";
         try (Connection c = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, tp.getProductId());
-            ps.executeUpdate();
-            cache.remove(tp);
-            setChanged(); notifyObservers(new RepoEvent<>(Type.DELETE,tp));
-        } catch (SQLException e){ e.printStackTrace();}
+            ps.setInt(1, txId); ps.executeUpdate();
+        } catch (SQLException e) { e.printStackTrace(); }
+        setChanged(); notifyObservers(new RepoEvent<>(Type.RELOAD, null));
     }
 
-    /* --------------- proxy --------------- */
-    @Override public void update(Observable o,Object arg){
-        setChanged(); notifyObservers(arg);
-    }
-
-    public enum Type { ADD, UPDATE, DELETE, RELOAD }
+    /* ---------- служебное ---------- */
+    public enum Type { ADD, DELETE, RELOAD }
     public record RepoEvent<T>(Type type, T payload) {}
 }
+
 
