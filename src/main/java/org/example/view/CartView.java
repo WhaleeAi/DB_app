@@ -85,6 +85,7 @@ public class CartView {
             });
             setAlignment(Pos.CENTER);
         }
+
         @Override protected void updateItem(Void v, boolean empty){
             super.updateItem(v, empty);
             setGraphic(empty?null:btn);

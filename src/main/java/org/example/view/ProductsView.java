@@ -67,10 +67,12 @@ public class ProductsView {
             box.setAlignment(Pos.CENTER);
             setGraphic(box);
         }
+
         private void change(int d){
             Product p = getTableView().getItems().get(getIndex());
             ProductsController.getInstance().updateQuantity(p,d);
         }
+
         @Override protected void updateItem(Void v, boolean empty){
             super.updateItem(v, empty);
             setGraphic(empty?null:getGraphic());

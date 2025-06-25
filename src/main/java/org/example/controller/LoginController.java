@@ -9,6 +9,7 @@ public class LoginController {
     private final Stage stage;
     private final LoginView view;
     private final Users repo = Users.getInstance();
+    private final Customers customersRepo = Customers.getInstance();
 
     public LoginController(Stage stage) {
         this.stage = stage;
@@ -40,6 +41,11 @@ public class LoginController {
             view.getMessageLabel().setText("Неверный логин или пароль");
             return;
         }
+
+        Session.setCurrentUser(u);
+        Customer c = customersRepo.getByUserId(u.getId());
+        Session.setCurrentCustomer(c);
+
 
         String role = u.getRole().toUpperCase();
         switch (role) {

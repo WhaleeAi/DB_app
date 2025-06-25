@@ -15,16 +15,17 @@ public final class Transactions {
     private Transactions() { }
 
     /** создаём «черновик» (status=DRAFT) — возвращаем id */
-    public int createDraft() {
+    public int createDraft(int customerId) {
         String sql = """
     INSERT INTO transactions
         (customer_id, total_quantity, transaction_date, total_amount, status)
-        VALUES (0, 0, ?, 0, 'DRAFT')
+        VALUES (?, 0, ?, 0, 'DRAFT')
     """;
 
         try (Connection c = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setDate  (3, Date.valueOf(LocalDate.now()));
+            ps.setInt  (1, customerId);
+            ps.setDate (2, Date.valueOf(LocalDate.now()));
 
             ps.executeUpdate();
             try (ResultSet k = ps.getGeneratedKeys()) {

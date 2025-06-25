@@ -43,7 +43,9 @@ public class ProductsController {
     /* ---------------- плюс / минус ---------------- */
     public void updateQuantity(Product p, int delta) {
         int q = Math.max(0, qtyBuffer.getOrDefault(p.getId(),0) + delta);
-        if (q == 0) qtyBuffer.remove(p.getId()); else qtyBuffer.put(p.getId(), q);
+        if (q == 0)
+            qtyBuffer.remove(p.getId());
+        else qtyBuffer.put(p.getId(), q);
         view.table().refresh();
     }
     public int getQuantity(Product p){ return qtyBuffer.getOrDefault(p.getId(),0); }
@@ -52,14 +54,19 @@ public class ProductsController {
     private void bindHandlers() {
         view.btnAddToCart().setOnAction(e -> handleAddToCart());
         view.btnCart()     .setOnAction(e -> {
-            if (draftId != null) new CartController(stage, draftId);
+            if (draftId != null)
+                new CartController(stage, draftId);
         });
     }
 
     private void handleAddToCart() {
         if (qtyBuffer.isEmpty()) return;
 
-        if (draftId == null) draftId = txRepo.createDraft();   // создаём запись DRAFT
+        if (draftId == null) {
+            Customer cust = Session.getCurrentCustomer();
+            if (cust == null) return;           // safety check
+            draftId = txRepo.createDraft(cust.getId());   // создаём запись DRAFT
+        }   // создаём запись DRAFT
 
         qtyBuffer.forEach((pid, qty) -> {
             Product p = prodRepo.getAllProducts().stream()

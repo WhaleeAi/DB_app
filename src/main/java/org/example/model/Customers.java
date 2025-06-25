@@ -130,6 +130,17 @@ public class Customers extends Observable implements Observer {
         return null;
     }
 
+    public Customer getByUserId(int userId) {
+        if (cache == null) { loadCustomers(); }
+        for (Customer c : cache) {
+            if (c.getUserId() != null && c.getUserId() == userId) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+
     @Override public void update(Observable o, Object arg) {
         setChanged();
         notifyObservers(arg);

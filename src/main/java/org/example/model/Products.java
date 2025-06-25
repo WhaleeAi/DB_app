@@ -25,7 +25,8 @@ public final class Products extends Observable implements Observer {
 
     /* если нужно добавить/обновить товар из админ-панели */
     public void addOrUpdateProduct(Product p) {
-        if (p.getId() == 0) insert(p); else update(p);
+        if (p.getId() == 0) insert(p);
+        else update(p);
     }
 
     /* ---------------- JDBC helpers --------------- */
