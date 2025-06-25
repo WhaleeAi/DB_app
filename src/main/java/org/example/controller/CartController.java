@@ -69,6 +69,7 @@ public class CartController {
 
         txRepo.finalizeDraft(draftId, totalQty, finalSum, LocalDate.now());
         cartRepo.clearByTransaction(draftId);
+        Session.clearCurrentDraftId();
 
         new ProductsController(stage);   // назад к товарам
     }

@@ -30,9 +30,9 @@ public class ProductsController {
         INSTANCE = this;
         this.stage = stage;
         this.view  = new ProductsView();
+        this.draftId = Session.getCurrentDraftId();
 
-        view.table().setItems(
-                FXCollections.observableArrayList(prodRepo.getAllProducts()));
+        view.table().setItems(FXCollections.observableArrayList(prodRepo.getAllProducts()));
 
         bindHandlers();
 
@@ -53,10 +53,9 @@ public class ProductsController {
     /* ---------------- кнопки ---------------- */
     private void bindHandlers() {
         view.btnAddToCart().setOnAction(e -> handleAddToCart());
-        view.btnCart()     .setOnAction(e -> {
-            if (draftId != null)
-                new CartController(stage, draftId);
-        });
+        view.btnCart()     .setOnAction(e ->
+                new CartController(stage, draftId != null ? draftId : -1)
+        );
     }
 
     private void handleAddToCart() {
@@ -66,7 +65,8 @@ public class ProductsController {
             Customer cust = Session.getCurrentCustomer();
             if (cust == null) return;           // safety check
             draftId = txRepo.createDraft(cust.getId());   // создаём запись DRAFT
-        }   // создаём запись DRAFT
+            Session.setCurrentDraftId(draftId);
+        }
 
         qtyBuffer.forEach((pid, qty) -> {
             Product p = prodRepo.getAllProducts().stream()

@@ -73,6 +73,8 @@ public class CartView {
 
         table.getColumns().addAll(cName,cQty,cPrice,cSum,cDel);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setPlaceholder(new Label("Корзина пуста"));
+
         return table;
     }
 
