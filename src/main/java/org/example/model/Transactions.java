@@ -39,7 +39,7 @@ public final class Transactions {
     public void finalizeDraft(int id, int qty, double sum, LocalDate date) {
         String sql = """
             UPDATE transactions
-               SET total_qty=?, total_sum=?, date=?, status='DONE'
+               SET total_quantity=?, total_amount=?, transaction_date=?, status='DONE'
              WHERE id=?""";
         try (Connection c = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {

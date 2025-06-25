@@ -29,7 +29,7 @@ public final class TransactionProducts extends Observable {
 
         String sql = """
             INSERT INTO transaction_products
-            (transaction_id, product_id, quantity, unit_price, total_price)
+            (transaction_id, product_id, quantity, purchase_price, total_sum)
             VALUES (?,?,?,?,?)""";
         try (Connection c = DatabaseConnection.getInstance().getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
