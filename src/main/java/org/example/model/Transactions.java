@@ -14,6 +14,32 @@ public final class Transactions {
 
     private Transactions() { }
 
+    private void loadTransactions() {
+        cache.clear();
+        String sql = "SELECT id, transaction_date, total_quantity, total_amount, status FROM transactions";
+        try (Connection c = DatabaseConnection.getInstance().getConnection();
+             Statement st = c.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Transaction t = new Transaction();
+                t.setId(rs.getInt("id"));
+                Date d = rs.getDate("transaction_date");
+                if (d != null) t.setDate(d.toLocalDate());
+                t.setTotalQuantity(rs.getInt("total_quantity"));
+                t.setTotalSum(rs.getDouble("total_amount"));
+                t.setStatus(rs.getString("status"));
+                cache.add(t);
+            }
+
+        } catch (SQLException e) { e.printStackTrace(); }
+    }
+
+    public List<Transaction> getAllTransactions() {
+        loadTransactions();
+        return Collections.unmodifiableList(cache);
+    }
+
     /** создаём «черновик» (status=DRAFT) — возвращаем id */
     public int createDraft(int customerId) {
         String sql = """

@@ -89,4 +89,7 @@ public class ProductsView {
     public TableView<Product> table()  { return table; }
     public Button btnAddToCart()       { return btnAddToCart; }
     public Button btnCart()            { return btnCart; }
+    public Button getBtnHistory(){ return btnHistory; }
+    public Button btnProfile()         { return btnProfile; }
+    public Button btnProducts()        { return btnProducts; }
 }

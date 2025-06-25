@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import org.example.model.*;
 import org.example.view.CartView;
+import org.example.controller.HistoryController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -50,6 +51,8 @@ public class CartController {
     private void bindHandlers() {
         view.buyButton().setOnAction(e -> handleBuy());
         view.btnProducts().setOnAction(e -> new ProductsController(stage));
+        view.btnHistory().setOnAction(e -> new HistoryController(stage));
+        view.btnProfile().setOnAction(e -> new ProfileController(stage));
     }
 
     /* удалить одну позицию */

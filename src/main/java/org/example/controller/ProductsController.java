@@ -4,6 +4,7 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import org.example.model.*;
 import org.example.view.ProductsView;
+import org.example.controller.HistoryController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +57,8 @@ public class ProductsController {
         view.btnCart()     .setOnAction(e ->
                 new CartController(stage, draftId != null ? draftId : -1)
         );
+        view.getBtnHistory().setOnAction(e -> new HistoryController(stage));
+        view.btnProfile() .setOnAction(e -> new ProfileController(stage));
     }
 
     private void handleAddToCart() {
