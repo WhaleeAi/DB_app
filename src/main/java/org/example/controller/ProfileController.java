@@ -10,10 +10,12 @@ public class ProfileController {
     private final ProfileView view;
     private final Users usersRepo = Users.getInstance();
     private final Customers customersRepo = Customers.getInstance();
+    private final String role;
 
-    public ProfileController(Stage stage) {
+    public ProfileController(Stage stage, String role) {
         this.stage = stage;
-        this.view  = new ProfileView();
+        this.role = role;
+        this.view  = new ProfileView(role);
         initData();
         bindHandlers();
         stage.setScene(view.getScene());
@@ -38,7 +40,13 @@ public class ProfileController {
 
     private void bindHandlers() {
         view.saveBtn().setOnAction(e -> handleSave());
-        view.backBtn().setOnAction(e -> new ProductsController(stage));
+        view.backBtn().setOnAction(e -> {
+            User u = Session.getCurrentUser();
+            if (u != null && "ADMIN".equalsIgnoreCase(u.getRole()))
+                new AdminProductsController(stage);
+            else
+                new ProductsController(stage);
+        });
         view.person().setOnAction(e -> handleSave());
     }
 
@@ -50,7 +58,7 @@ public class ProfileController {
             u.setPassword(view.password().getText());
             usersRepo.updateUser(u);
         }
-        if (c != null) {
+        if (c != null & role == "customer") {
             c.setCompanyName(view.company().getText().trim());
             c.setPhone(view.phone().getText().trim());
             c.setAddress(view.address().getText().trim());

@@ -17,13 +17,6 @@ public class Discounts {
         return instance;
     }
 
-    public List<Discount> getAllDiscounts() {
-        if (discountList == null) {
-            loadDiscounts();
-        }
-        return discountList;
-    }
-
     private void loadDiscounts() {
         discountList = new ArrayList<>();
         try {

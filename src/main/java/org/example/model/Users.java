@@ -12,12 +12,10 @@ public class Users extends Observable implements Observer {
 
     private Users() { loadUsers(); }
 
-    /* ---------- Данные в памяти ---------- */
     private final List<User> cache = new ArrayList<>();
 
     public List<User> getAllUsers() { return Collections.unmodifiableList(cache); }
 
-    /* ---------- Загрузка всего списка ---------- */
     private void loadUsers() {
         cache.clear();
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -39,7 +37,6 @@ public class Users extends Observable implements Observer {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    /* ---------- CRUD ---------- */
     public void addUser(User u) {
         String sql = "INSERT INTO user (login, password, role) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getInstance().getConnection();
@@ -71,11 +68,9 @@ public class Users extends Observable implements Observer {
             ps.setInt   (4, u.getId());
             ps.executeUpdate();
 
-            /* заменяем объект в кеше */
             for (int i = 0; i < cache.size(); i++)
                 if (cache.get(i).getId() == u.getId()) { cache.set(i, u); break; }
 
-            /* событие UPDATE */
             setChanged();
             notifyObservers(new RepoEvent<>(Type.UPDATE, u));
 
@@ -91,21 +86,17 @@ public class Users extends Observable implements Observer {
             ps.executeUpdate();
 
             cache.removeIf(u -> u.getId() == id);
-            /* событие DELETE */
             setChanged();
             notifyObservers(new RepoEvent<>(Type.DELETE, id));
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    /* ---------- Observer ---------- */
     @Override public void update(Observable src, Object arg) {
-        /* Если когда-нибудь User станет Observable, проксируем его события */
         setChanged();
-        notifyObservers(arg);  // пересылаем наверх
+        notifyObservers(arg);
     }
 
-    /* ---------- Вспомогательное ---------- */
     public enum Type { ADD, UPDATE, DELETE, RELOAD }
     public record RepoEvent<T>(Type type, T payload) { }
 

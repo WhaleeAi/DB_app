@@ -25,8 +25,12 @@ public class HistoryController {
     }
 
     private void initData() {
-        view.table().setItems(FXCollections.observableArrayList(
-                txRepo.getAllTransactions()));
+        var customer = Session.getCurrentCustomer();
+        if (customer != null)
+            view.table().setItems(FXCollections.observableArrayList(
+                    txRepo.getTransactionsByCustomer(customer.getId())));
+        else
+            view.table().setItems(FXCollections.observableArrayList(txRepo.getAllTransactions()));
     }
 
     private void bindHandlers() {
@@ -35,6 +39,6 @@ public class HistoryController {
             Integer draftId = Session.getCurrentDraftId();
             new CartController(stage, draftId != null ? draftId : -1);
         });
-        view.btnProfile().setOnAction(e -> new ProfileController(stage));
+        view.btnProfile().setOnAction(e -> new ProfileController(stage, "admin"));
     }
 }

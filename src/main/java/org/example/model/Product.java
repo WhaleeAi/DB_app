@@ -19,7 +19,6 @@ public class Product {
         this.description = description;
     }
 
-    // --- Геттеры и сеттеры ---
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

@@ -8,11 +8,11 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
 public class LoginView {
-    private final TextField     loginField    = new TextField();
+    private final TextField loginField = new TextField();
     private final PasswordField passwordField = new PasswordField();
-    private final Button        loginButton   = new Button("Войти");
-    private final Button        signUpButton  = new Button("Регистрация");
-    private final Label         messageLabel  = new Label();
+    private final Button loginButton = new Button("Войти");
+    private final Button signUpButton = new Button("Регистрация");
+    private final Label messageLabel = new Label();
 
     private final Scene scene;
 
@@ -83,12 +83,12 @@ public class LoginView {
                    -fx-padding:10 24;-fx-background-radius:5;
                    """); }
 
-    public Scene getScene()               { return scene; }
-    public TextField getLoginField()     { return loginField; }
+    public Scene getScene() { return scene; }
+    public TextField getLoginField() { return loginField; }
     public PasswordField getPasswordField()  { return passwordField; }
-    public Button        loginButton()    { return loginButton; }
-    public Button        signUpButton()   { return signUpButton; }
-    public Label         getMessageLabel()   { return messageLabel; }
+    public Button loginButton() { return loginButton; }
+    public Button signUpButton() { return signUpButton; }
+    public Label getMessageLabel() { return messageLabel; }
 }
 
 

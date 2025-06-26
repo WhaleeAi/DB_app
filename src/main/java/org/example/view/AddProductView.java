@@ -35,7 +35,7 @@ public class AddProductView {
         messageLabel.setStyle("-fx-font-size:12px;");
 
         root.getChildren().addAll(title, form, buttons, messageLabel);
-        scene = new Scene(root, 420, 320);
+        scene = new Scene(root, 420, 500);
     }
 
     private GridPane buildFormCard() {

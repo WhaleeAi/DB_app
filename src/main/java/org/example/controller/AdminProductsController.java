@@ -4,6 +4,10 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import org.example.model.*;
 import org.example.view.AdminProductsView;
+import org.example.controller.CustomersController;
+import org.example.controller.AdminHistoryController;
+import org.example.controller.ProfileController;
+import org.example.controller.AddProductController;
 
 public class AdminProductsController {
 
@@ -23,6 +27,10 @@ public class AdminProductsController {
         view.table().setItems(FXCollections.observableArrayList(prodRepo.getAllProducts()));
 
         view.btnAddProduct().setOnAction(e -> handleAddProduct());
+        view.btnCart().setOnAction(e -> new CustomersController(stage));
+        view.getBtnHistory().setOnAction(e -> new AdminHistoryController(stage));
+        view.btnProfile().setOnAction(e -> new ProfileController(stage, "admin"));
+        view.btnProducts().setOnAction(e -> new AdminProductsController(stage));
 
         stage.setScene(view.getScene());
         stage.show();

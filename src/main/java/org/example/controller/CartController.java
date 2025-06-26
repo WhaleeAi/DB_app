@@ -52,7 +52,7 @@ public class CartController {
         view.buyButton().setOnAction(e -> handleBuy());
         view.btnProducts().setOnAction(e -> new ProductsController(stage));
         view.btnHistory().setOnAction(e -> new HistoryController(stage));
-        view.btnProfile().setOnAction(e -> new ProfileController(stage));
+        view.btnProfile().setOnAction(e -> new ProfileController(stage, "customer"));
     }
 
     /* удалить одну позицию */

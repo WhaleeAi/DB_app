@@ -3,11 +3,7 @@ package org.example.model;
 import java.sql.*;
 import java.util.*;
 import java.util.Observable;
-import java.util.Observer;
 
-/**
- * Кэш всех товаров из таблицы product.
- */
 public final class Products extends Observable {
 
     private static final Products INSTANCE = new Products();

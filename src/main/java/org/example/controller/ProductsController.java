@@ -53,7 +53,7 @@ public class ProductsController {
                 new CartController(stage, draftId != null ? draftId : -1)
         );
         view.getBtnHistory().setOnAction(e -> new HistoryController(stage));
-        view.btnProfile() .setOnAction(e -> new ProfileController(stage));
+        view.btnProfile() .setOnAction(e -> new ProfileController(stage, "customer"));
     }
 
     private void handleAddToCart() {

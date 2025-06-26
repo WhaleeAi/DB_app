@@ -9,20 +9,16 @@ public final class TransactionProducts extends Observable {
     private static final TransactionProducts INSTANCE = new TransactionProducts();
     public static TransactionProducts getInstance() { return INSTANCE; }
 
-    /* кеш всех позиций текущей сессии приложения */
     private final List<TransactionProduct> cache = new ArrayList<>();
 
-    private TransactionProducts() { /* лениво; не грузим при старте */ }
+    private TransactionProducts() { }
 
-    /* ---------- API ---------- */
-
-    public List<TransactionProduct> getAll() { return Collections.unmodifiableList(cache); }
+    public List<TransactionProduct> getAll() { return cache; }
 
     public List<TransactionProduct> getByTransaction(int txId) {
         return cache.stream().filter(tp -> tp.getTransactionId() == txId).toList();
     }
 
-    /** вставка НОВОЙ позиции под конкретный transaction_id */
     public void insert(int txId, Product p, int qty) {
         double unit = (qty > 5 ? p.getWholesalePrice() : p.getRetailPrice());
         double sum  = unit * qty;
@@ -54,7 +50,6 @@ public final class TransactionProducts extends Observable {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    /** удалить одну позицию из корзины */
     public void remove(int txId, int productId) {
         cache.removeIf(tp -> tp.getTransactionId() == txId && tp.getProductId() == productId);
 
@@ -65,10 +60,10 @@ public final class TransactionProducts extends Observable {
             ps.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
 
-        setChanged(); notifyObservers(new RepoEvent<>(Type.DELETE, productId));
+        setChanged();
+        notifyObservers(new RepoEvent<>(Type.DELETE, productId));
     }
 
-    /** очистить корзину после покупки / отмены */
     public void clearByTransaction(int txId) {
         cache.removeIf(tp -> tp.getTransactionId() == txId);
         String sql = "DELETE FROM transaction_products WHERE transaction_id=?";
@@ -79,7 +74,6 @@ public final class TransactionProducts extends Observable {
         setChanged(); notifyObservers(new RepoEvent<>(Type.RELOAD, null));
     }
 
-    /* ---------- служебное ---------- */
     public enum Type { ADD, DELETE, RELOAD }
     public record RepoEvent<T>(Type type, T payload) {}
 }

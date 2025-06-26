@@ -14,33 +14,42 @@ public final class Transactions {
 
     private Transactions() { }
 
-    private void loadTransactions() {
+    private void loadTransactions(Integer customerId) {
         cache.clear();
-        String sql = "SELECT id, transaction_date, total_quantity, total_amount, status FROM transactions";
+        String sql = "SELECT id, customer_id, transaction_date, total_quantity, total_amount, status FROM transactions";
+        if (customerId != null) sql += " WHERE customer_id=?";
         try (Connection c = DatabaseConnection.getInstance().getConnection();
-             Statement st = c.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
+             PreparedStatement st = c.prepareStatement(sql)) {
 
-            while (rs.next()) {
-                Transaction t = new Transaction();
-                t.setId(rs.getInt("id"));
-                Date d = rs.getDate("transaction_date");
-                if (d != null) t.setDate(d.toLocalDate());
-                t.setTotalQuantity(rs.getInt("total_quantity"));
-                t.setTotalSum(rs.getDouble("total_amount"));
-                t.setStatus(rs.getString("status"));
-                cache.add(t);
+            if (customerId != null) st.setInt(1, customerId);
+
+            try (ResultSet rs = st.executeQuery()) {
+                while (rs.next()) {
+                    Transaction t = new Transaction();
+                    t.setId(rs.getInt("id"));
+                    t.setCustomerId(rs.getInt("customer_id"));
+                    Date d = rs.getDate("transaction_date");
+                    if (d != null) t.setDate(d.toLocalDate());
+                    t.setTotalQuantity(rs.getInt("total_quantity"));
+                    t.setTotalSum(rs.getDouble("total_amount"));
+                    t.setStatus(rs.getString("status"));
+                    cache.add(t);
+                }
             }
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
     public List<Transaction> getAllTransactions() {
-        loadTransactions();
+        loadTransactions(null);
         return Collections.unmodifiableList(cache);
     }
 
-    /** создаём «черновик» (status=DRAFT) — возвращаем id */
+    public List<Transaction> getTransactionsByCustomer(int customerId) {
+        loadTransactions(customerId);
+        return Collections.unmodifiableList(cache);
+    }
+
     public int createDraft(int customerId) {
         String sql = """
     INSERT INTO transactions
@@ -59,6 +68,7 @@ public final class Transactions {
                     int id = k.getInt(1);
                     Transaction t = new Transaction();
                     t.setId(id);
+                    t.setCustomerId(customerId);
                     t.setStatus("DRAFT");
                     cache.add(t);
                     return id;
@@ -84,5 +94,15 @@ public final class Transactions {
             ps.executeUpdate();
 
         } catch (SQLException e) { e.printStackTrace(); }
+
+        for (Transaction t : cache) {
+            if (t.getId() == id) {
+                t.setTotalQuantity(qty);
+                t.setTotalSum(sum);
+                t.setDate(date);
+                t.setStatus("DONE");
+                break;
+            }
+        }
     }
 }

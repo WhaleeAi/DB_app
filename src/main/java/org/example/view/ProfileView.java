@@ -16,13 +16,16 @@ public class ProfileView {
     private final TextField addressField = new TextField();
     private final TextField personField = new TextField();
 
+    private final String role;
+
     private final Button saveButton = new Button("Сохранить");
     private final Button backButton = new Button("Назад");
     private final Label  message    = new Label();
 
     private final Scene scene;
 
-    public ProfileView() {
+    public ProfileView(String role) {
+        this.role = role;
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.CENTER);
@@ -54,10 +57,12 @@ public class ProfileView {
         int r = 0;
         addRow(g,"Логин:", loginField, r++);
         addRow(g,"Пароль:", passwordField, r++);
-        addRow(g,"Компания:", companyField, r++);
-        addRow(g,"Телефон:", phoneField, r++);
-        addRow(g,"Адрес:", addressField, r++);
-        addRow(g,"Контактное лицо:", personField, r++);
+        if (role == "customer"){
+            addRow(g,"Компания:", companyField, r++);
+            addRow(g,"Телефон:", phoneField, r++);
+            addRow(g,"Адрес:", addressField, r++);
+            addRow(g,"Контактное лицо:", personField, r++);
+        }
         return g;
     }
 

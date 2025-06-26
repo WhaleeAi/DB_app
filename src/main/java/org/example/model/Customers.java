@@ -3,9 +3,8 @@ package org.example.model;
 import java.sql.*;
 import java.util.*;
 import java.util.Observable;
-import java.util.Observer;
 
-public class Customers extends Observable implements Observer {
+public class Customers extends Observable {
 
     private static final Customers INSTANCE = new Customers();
     public static Customers getInstance() { return INSTANCE; }
@@ -118,18 +117,6 @@ public class Customers extends Observable implements Observer {
         }
     }
 
-    public Customer getCustomerById(int id) {
-        if (cache == null) {
-            loadCustomers();
-        }
-        for (Customer customer : cache) {
-            if (customer.getId() == id) {
-                return customer;
-            }
-        }
-        return null;
-    }
-
     public Customer getByUserId(int userId) {
         if (cache == null) { loadCustomers(); }
         for (Customer c : cache) {
@@ -139,13 +126,4 @@ public class Customers extends Observable implements Observer {
         }
         return null;
     }
-
-
-    @Override public void update(Observable o, Object arg) {
-        setChanged();
-        notifyObservers(arg);
-    }
-
-    public enum Type { ADD, UPDATE, DELETE, RELOAD }
-    public record RepoEvent<T>(Type type, T payload) { }
 }

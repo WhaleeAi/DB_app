@@ -50,8 +50,10 @@ public class LoginController {
         switch (role) {
             case "CUSTOMER":
                     new ProductsController(stage);
+                    break;
             case "ADMIN":
                     new AdminProductsController(stage);
+                    break;
             default:
                     view.getMessageLabel().setText("Роль «" + u.getRole() + "» не поддерживается");
         }
