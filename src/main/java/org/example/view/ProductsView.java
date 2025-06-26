@@ -10,7 +10,6 @@ import org.example.controller.ProductsController;
 
 public class ProductsView {
 
-    /* header */
     private final Button btnProducts  = new Button("Товары");
     private final Button btnCart      = new Button("Корзина");
     private final Button btnHistory   = new Button("История");
@@ -58,7 +57,6 @@ public class ProductsView {
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 
-    /* ячейка с кнопками + / – */
     private static class QuantityCell extends TableCell<Product,Void> {
         private final Label  lbl  = new Label("0");
         private final Button plus = new Button("+");
@@ -88,7 +86,6 @@ public class ProductsView {
         }
     }
 
-    /* ---------- getters ---------- */
     public Scene getScene()            { return scene; }
     public TableView<Product> table()  { return table; }
     public Button btnAddToCart()       { return btnAddToCart; }

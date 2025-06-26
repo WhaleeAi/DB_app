@@ -4,10 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import org.example.model.*;
 import org.example.view.AdminProductsView;
-import org.example.controller.CustomersController;
-import org.example.controller.AdminHistoryController;
-import org.example.controller.ProfileController;
-import org.example.controller.AddProductController;
 
 public class AdminProductsController {
 

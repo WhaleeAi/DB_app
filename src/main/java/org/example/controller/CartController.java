@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import org.example.model.*;
 import org.example.view.CartView;
-import org.example.controller.HistoryController;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +19,7 @@ public class CartController {
     private final TransactionProducts cartRepo = TransactionProducts.getInstance();
     private final Transactions        txRepo   = Transactions.getInstance();
 
-    private final int draftId;   // привязка корзины к одному transaction_id
+    private final int draftId;
 
     public CartController(Stage stage, int draftId) {
         INSTANCE = this;
@@ -40,7 +39,6 @@ public class CartController {
                 cartRepo.getByTransaction(draftId)));
         recalcTotals();
 
-        /* слушаем изменения корзины */
         cartRepo.addObserver((o,a)->{
             view.table().setItems(FXCollections.observableArrayList(
                     cartRepo.getByTransaction(draftId)));
@@ -55,12 +53,10 @@ public class CartController {
         view.btnProfile().setOnAction(e -> new ProfileController(stage, "customer"));
     }
 
-    /* удалить одну позицию */
     public void removeItem(TransactionProduct tp){
         cartRepo.remove(draftId, tp.getProductId());
     }
 
-    /* оформление покупки */
     private void handleBuy() {
         List<TransactionProduct> items = cartRepo.getByTransaction(draftId);
         if (items.isEmpty()) return;
@@ -74,10 +70,9 @@ public class CartController {
         cartRepo.clearByTransaction(draftId);
         Session.clearCurrentDraftId();
 
-        new ProductsController(stage);   // назад к товарам
+        new ProductsController(stage);
     }
 
-    /* простая заглушка расчёта скидки */
     private double getDiscount(int qty, double sum){ return 0.0; }
 
     private void recalcTotals(){

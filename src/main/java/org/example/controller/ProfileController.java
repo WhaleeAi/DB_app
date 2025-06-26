@@ -58,7 +58,7 @@ public class ProfileController {
             u.setPassword(view.password().getText());
             usersRepo.updateUser(u);
         }
-        if (c != null & role == "customer") {
+        if (c != null && role == "customer") {
             c.setCompanyName(view.company().getText().trim());
             c.setPhone(view.phone().getText().trim());
             c.setAddress(view.address().getText().trim());

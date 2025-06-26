@@ -97,7 +97,6 @@ public class ProfileView {
                    -fx-padding:10 24;-fx-background-radius:5;""");
     }
 
-    /* -------- getters -------- */
     public Scene getScene() { return scene; }
     public TextField login() { return loginField; }
     public PasswordField password() { return passwordField; }

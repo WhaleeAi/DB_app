@@ -7,7 +7,6 @@ import java.util.Observer;
 
 public class Users extends Observable implements Observer {
 
-    /* ---------- Singleton ---------- */
     private static final Users INSTANCE = new Users();
 
     private Users() { loadUsers(); }
@@ -30,7 +29,7 @@ public class Users extends Observable implements Observer {
                 u.setRole(rs.getString("role"));
                 cache.add(u);
             }
-            /* событие RELOAD */
+
             setChanged();
             notifyObservers(new RepoEvent<>(Type.RELOAD, null));
 
@@ -50,7 +49,7 @@ public class Users extends Observable implements Observer {
             try (ResultSet keys = ps.getGeneratedKeys()) { if (keys.next()) u.setId(keys.getInt(1)); }
 
             cache.add(u);
-            /* событие ADD */
+
             setChanged();
             notifyObservers(new RepoEvent<>(Type.ADD, u));
 

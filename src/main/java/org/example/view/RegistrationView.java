@@ -9,7 +9,6 @@ import javafx.scene.paint.Color;
 
 public class RegistrationView {
 
-    /* --- поля формы --- */
     private final TextField loginField = new TextField();
     private final PasswordField passwordField = new PasswordField();
     private final TextField companyField = new TextField();
@@ -92,8 +91,7 @@ public class RegistrationView {
                    -fx-text-fill:white;-fx-font-weight:bold;
                    -fx-padding:10 24;-fx-background-radius:5;""");
     }
-
-    /* -------- getters для контроллёра -------- */
+    
     public Scene getScene() { return scene; }
     public TextField login() { return loginField; }
     public PasswordField password() { return passwordField; }

@@ -78,7 +78,6 @@ public final class Transactions {
         return 0;
     }
 
-    /** финализируем заказ: проставляем qty, sum, дату, статус DONE */
     public void finalizeDraft(int id, int qty, double sum, LocalDate date) {
         String sql = """
             UPDATE transactions
