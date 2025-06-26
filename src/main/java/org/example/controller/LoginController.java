@@ -13,18 +13,17 @@ public class LoginController {
 
     public LoginController(Stage stage) {
         this.stage = stage;
-        this.view  = new LoginView();          // создаём View
+        this.view  = new LoginView();
         bindHandlers();
-        stage.setScene(view.getScene());       // сразу показываем
+        stage.setScene(view.getScene());
         stage.setResizable(false);
         stage.centerOnScreen();
     }
 
-    /* ----------- handlers ----------- */
     private void bindHandlers() {
         view.loginButton().setOnAction(e -> tryLogin());
         view.signUpButton().setOnAction(
-                e -> new RegistrationController(stage));   // открываем регистрацию
+                e -> new RegistrationController(stage));
         view.getPasswordField().setOnAction(e -> tryLogin());
     }
 
@@ -51,8 +50,8 @@ public class LoginController {
         switch (role) {
             case "CUSTOMER":
                     new ProductsController(stage);
-//            case "ADMIN" ->
-//                    new AdminController(stage);
+            case "ADMIN":
+                    new AdminProductsController(stage);
             default:
                     view.getMessageLabel().setText("Роль «" + u.getRole() + "» не поддерживается");
         }

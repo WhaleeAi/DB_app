@@ -8,7 +8,7 @@ import java.util.Observer;
 /**
  * Кэш всех товаров из таблицы product.
  */
-public final class Products extends Observable implements Observer {
+public final class Products extends Observable {
 
     private static final Products INSTANCE = new Products();
     public static Products getInstance() { return INSTANCE; }
@@ -17,19 +17,14 @@ public final class Products extends Observable implements Observer {
 
     private Products() { loadProducts(); }
 
-    /* ---------------- PUBLIC API ---------------- */
-
     public List<Product> getAllProducts() {
         return Collections.unmodifiableList(cache);
     }
 
-    /* если нужно добавить/обновить товар из админ-панели */
     public void addOrUpdateProduct(Product p) {
         if (p.getId() == 0) insert(p);
         else update(p);
     }
-
-    /* ---------------- JDBC helpers --------------- */
 
     private void loadProducts() {
         cache.clear();
@@ -91,12 +86,6 @@ public final class Products extends Observable implements Observer {
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
-    /* --------------- Observer proxy -------------- */
-    @Override public void update(Observable o, Object arg) {
-        setChanged(); notifyObservers(arg);        // если Product станет Observable
-    }
-
-    /* --------------- helper record --------------- */
     public enum Type { ADD, UPDATE, DELETE, RELOAD }
     public record RepoEvent<T>(Type type, T payload) { }
 }

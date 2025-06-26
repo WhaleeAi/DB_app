@@ -4,7 +4,6 @@ import javafx.collections.FXCollections;
 import javafx.stage.Stage;
 import org.example.model.*;
 import org.example.view.ProductsView;
-import org.example.controller.HistoryController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,10 +20,8 @@ public class ProductsController {
     private final TransactionProducts cartRepo = TransactionProducts.getInstance();
     private final Transactions        txRepo   = Transactions.getInstance();
 
-    /* productId -> qty выбранное на экране товаров */
     private final Map<Integer,Integer> qtyBuffer = new HashMap<>();
 
-    /* текущий «черновик» заказа */
     private Integer draftId = null;
 
     public ProductsController(Stage stage) {
@@ -41,7 +38,6 @@ public class ProductsController {
         stage.show();
     }
 
-    /* ---------------- плюс / минус ---------------- */
     public void updateQuantity(Product p, int delta) {
         int q = Math.max(0, qtyBuffer.getOrDefault(p.getId(),0) + delta);
         if (q == 0)
@@ -51,7 +47,6 @@ public class ProductsController {
     }
     public int getQuantity(Product p){ return qtyBuffer.getOrDefault(p.getId(),0); }
 
-    /* ---------------- кнопки ---------------- */
     private void bindHandlers() {
         view.btnAddToCart().setOnAction(e -> handleAddToCart());
         view.btnCart()     .setOnAction(e ->
@@ -66,15 +61,16 @@ public class ProductsController {
 
         if (draftId == null) {
             Customer cust = Session.getCurrentCustomer();
-            if (cust == null) return;           // safety check
-            draftId = txRepo.createDraft(cust.getId());   // создаём запись DRAFT
+            if (cust == null) return;
+            draftId = txRepo.createDraft(cust.getId());
             Session.setCurrentDraftId(draftId);
         }
 
         qtyBuffer.forEach((pid, qty) -> {
             Product p = prodRepo.getAllProducts().stream()
                     .filter(pr -> pr.getId()==pid).findFirst().orElse(null);
-            if (p != null) cartRepo.insert(draftId, p, qty);
+            if (p != null)
+                cartRepo.insert(draftId, p, qty);
         });
 
         qtyBuffer.clear();

@@ -7,16 +7,19 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
-public class LoginView {
-    private final TextField     loginField    = new TextField();
-    private final PasswordField passwordField = new PasswordField();
-    private final Button        loginButton   = new Button("Войти");
-    private final Button        signUpButton  = new Button("Регистрация");
+public class AddProductView {
+
+    private final TextField     name    = new TextField();
+    private final TextField description = new TextField();
+    private final TextField wholesalePrice = new TextField();
+    private final TextField retailPrice  = new TextField();
+    private final Button        setNameButton   = new Button("Добавить продукт");
+    private final Button        backToProds   = new Button("Вернуться");
     private final Label         messageLabel  = new Label();
 
     private final Scene scene;
 
-    public LoginView() {
+    public AddProductView() {
         VBox root = new VBox(20);
         root.setPadding(new Insets(30));
         root.setAlignment(Pos.CENTER);
@@ -46,8 +49,10 @@ public class LoginView {
                       -fx-effect:dropshadow(three-pass-box,rgba(0,0,0,0.1),10,0,0,0);
                       """);
 
-        addRow(grid, "Логин:",    loginField,    0);
-        addRow(grid, "Пароль:",   passwordField, 1);
+        addRow(grid, "Название:",    name,    0);
+        addRow(grid, "Розничная цена:",   retailPrice, 1);
+        addRow(grid, "Оптовая цена:",   wholesalePrice, 2);
+        addRow(grid, "Описание:",   description, 3);
 
         return grid;
     }
@@ -61,9 +66,9 @@ public class LoginView {
     }
 
     private HBox buildButtonBar() {
-        stylePrimary(loginButton);
-        styleSecondary(signUpButton);
-        HBox box = new HBox(12, loginButton, signUpButton);
+        stylePrimary(setNameButton);
+        stylePrimary(backToProds);
+        HBox box = new HBox(12, setNameButton, backToProds);
         box.setAlignment(Pos.CENTER);
         return box;
     }
@@ -74,21 +79,14 @@ public class LoginView {
                    -fx-background-color:#1976d2;
                    -fx-text-fill:white;-fx-font-weight:bold;
                    -fx-padding:10 24;-fx-background-radius:5;
-                   """); }
-    private void styleSecondary(Button b){
-        b.setPrefWidth(140);
-        b.setStyle("""
-                   -fx-background-color:#616161;
-                   -fx-text-fill:white;-fx-font-weight:bold;
-                   -fx-padding:10 24;-fx-background-radius:5;
-                   """); }
+                   """);
+    }
 
-    public Scene getScene()               { return scene; }
-    public TextField getLoginField()     { return loginField; }
-    public PasswordField getPasswordField()  { return passwordField; }
-    public Button        loginButton()    { return loginButton; }
-    public Button        signUpButton()   { return signUpButton; }
-    public Label         getMessageLabel()   { return messageLabel; }
+    public Scene getScene() { return scene; }
+    public Button getNameButton() { return setNameButton; }
+    public Button getbackToProds() { return backToProds; }
+    public TextField getName() { return name; }
+    public TextField getRetailPrice() { return retailPrice; }
+    public TextField getWholesalePrice() { return wholesalePrice; }
+    public TextField getDescription() { return description; }
 }
-
-

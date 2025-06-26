@@ -10,14 +10,11 @@ import org.example.controller.CartController;
 import org.example.model.TransactionProduct;
 
 public class CartView {
-
-    /* header */
     private final Button btnProducts = new Button("Товары");
     private final Button btnCart     = new Button("Корзина");
     private final Button btnHistory  = new Button("История");
     private final Button btnProfile  = new Button("Личный кабинет");
 
-    /* table + totals */
     private final TableView<TransactionProduct> table = new TableView<>();
     private final Label totalQtyLbl   = new Label("0");
     private final Label totalSumLbl   = new Label("0.00");
@@ -43,7 +40,6 @@ public class CartView {
         HBox.setHgrow(h.getChildren().get(3), Priority.ALWAYS);
         h.setPadding(new Insets(10));
         h.setAlignment(Pos.CENTER_LEFT);
-        /* стиль такой же, как в ProductsView */
         h.setStyle("-fx-background-color:#ffffff;" +
                 "-fx-border-color:#e0e0e0;-fx-border-width:0 0 1 0;");
         return h;
@@ -109,7 +105,6 @@ public class CartView {
         return box;
     }
 
-    /* -------- getters -------- */
     public Scene getScene()                { return scene; }
     public TableView<TransactionProduct> table(){ return table; }
     public Label totalQtyLbl(){ return totalQtyLbl; }

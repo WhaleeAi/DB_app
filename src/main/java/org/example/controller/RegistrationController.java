@@ -20,7 +20,6 @@ public class RegistrationController {
         stage.centerOnScreen();
     }
 
-    /* ---------------- handlers ---------------- */
     private void bindHandlers(){
         view.saveBtn().setOnAction(e -> handleSave());
         view.backBtn().setOnAction(e -> new LoginController(stage));
@@ -40,7 +39,6 @@ public class RegistrationController {
             view.messageLbl().setText("Такой логин уже существует"); return;
         }
 
-        /* создаём User + Customer */
         User u = new User();
         u.setLogin(login); u.setPassword(pass); u.setRole("customer");
         usersRepo.addUser(u);
@@ -53,7 +51,7 @@ public class RegistrationController {
         c.setContactPerson(view.person().getText().trim());
         customersRepo.addCustomer(c);
 
-        new LoginController(stage);   // вернуться к авторизации
+        new LoginController(stage);
     }
 }
 

@@ -43,14 +43,18 @@ public class ProductsView {
         cName.setCellValueFactory(new PropertyValueFactory<>("name"));
         cName.setPrefWidth(350);
 
-        TableColumn<Product,Double> cPrice = new TableColumn<>("Цена, ₽");
+        TableColumn<Product,Double> cPrice = new TableColumn<>("Цена розничная, ₽");
         cPrice.setCellValueFactory(new PropertyValueFactory<>("retailPrice"));
         cPrice.setPrefWidth(120);
+
+        TableColumn<Product,Double> c2Price = new TableColumn<>("Цена оптовая, ₽");
+        c2Price.setCellValueFactory(new PropertyValueFactory<>("wholesalePrice"));
+        c2Price.setPrefWidth(120);
 
         TableColumn<Product,Void> cQty = new TableColumn<>("Кол-во");
         cQty.setCellFactory(col -> new QuantityCell());
 
-        table.getColumns().addAll(cName, cPrice, cQty);
+        table.getColumns().addAll(cName, cPrice, c2Price, cQty);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
     }
 

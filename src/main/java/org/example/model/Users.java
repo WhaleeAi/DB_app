@@ -9,7 +9,7 @@ public class Users extends Observable implements Observer {
 
     /* ---------- Singleton ---------- */
     private static final Users INSTANCE = new Users();
-    public static Users getInstance() { return INSTANCE; }
+
     private Users() { loadUsers(); }
 
     /* ---------- Данные в памяти ---------- */
@@ -108,4 +108,6 @@ public class Users extends Observable implements Observer {
     /* ---------- Вспомогательное ---------- */
     public enum Type { ADD, UPDATE, DELETE, RELOAD }
     public record RepoEvent<T>(Type type, T payload) { }
+
+    public static Users getInstance() { return INSTANCE; }
 }
