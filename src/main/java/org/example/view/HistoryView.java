@@ -6,7 +6,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 import org.example.model.Transaction;
+import org.example.controller.CheckTransactionController;
 
 public class HistoryView {
 
@@ -48,7 +50,27 @@ public class HistoryView {
         TableColumn<Transaction, Double> cSum = new TableColumn<>("Сумма");
         cSum.setCellValueFactory(new PropertyValueFactory<>("totalSum"));
 
-        table.getColumns().addAll(cDate, cQty, cSum);
+        TableColumn<Transaction, Void> cView = new TableColumn<>("");
+        cView.setCellFactory(col -> new TableCell<Transaction, Void>() {
+            private final Button btn = new Button("Просмотреть заказ");
+
+            {
+                btn.setOnAction(e -> {
+                    Transaction t = getTableView().getItems().get(getIndex());
+                    Stage st = (Stage) getTableView().getScene().getWindow();
+                    new CheckTransactionController(st, t.getId());
+                });
+                setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btn);
+            }
+        });
+
+        table.getColumns().addAll(cDate, cQty, cSum, cView);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("История пуста"));
     }

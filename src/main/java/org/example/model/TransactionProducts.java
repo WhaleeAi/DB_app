@@ -19,6 +19,41 @@ public final class TransactionProducts extends Observable {
         return cache.stream().filter(tp -> tp.getTransactionId() == txId).toList();
     }
 
+    public List<TransactionProduct> loadFromDb(int txId) {
+        List<TransactionProduct> list = new ArrayList<>();
+
+        String sql = """
+            SELECT tp.id, tp.product_id, tp.quantity,
+                   tp.purchase_price, tp.transaction_id, tp.total_sum
+              FROM transaction_products tp
+              JOIN transactions t ON tp.transaction_id = t.id
+             WHERE tp.transaction_id=?""";
+
+        try (Connection c = DatabaseConnection.getInstance().getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+
+            ps.setInt(1, txId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    TransactionProduct tp = new TransactionProduct(
+                            rs.getInt("product_id"),
+                            rs.getString("name"),
+                            rs.getInt("quantity"),
+                            rs.getDouble("purchase_price")
+                    );
+                    tp.setId(rs.getInt("id"));
+                    tp.setTransactionId(txId);
+                    list.add(tp);
+                }
+            }
+
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        cache.removeIf(tp -> tp.getTransactionId() == txId);
+        cache.addAll(list);
+        return list;
+    }
+
     public void insert(int txId, Product p, int qty) {
         double unit = (qty > 5 ? p.getWholesalePrice() : p.getRetailPrice());
         double sum  = unit * qty;
