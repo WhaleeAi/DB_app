@@ -55,7 +55,8 @@ public class LoginView {
     private void addRow(GridPane g, String caption, Control field, int row) {
         Label lbl = new Label(caption);
         lbl.setStyle("-fx-font-weight:bold;-fx-text-fill:#555;");
-        g.add(lbl,0,row); g.add(field,1,row);
+        g.add(lbl,0,row);
+        g.add(field,1,row);
         field.setPrefWidth(220);
         field.setStyle("-fx-padding:8;-fx-border-radius:5;-fx-background-radius:5;");
     }
@@ -74,14 +75,17 @@ public class LoginView {
                    -fx-background-color:#1976d2;
                    -fx-text-fill:white;-fx-font-weight:bold;
                    -fx-padding:10 24;-fx-background-radius:5;
-                   """); }
+                   """);
+    }
+
     private void styleSecondary(Button b){
         b.setPrefWidth(140);
         b.setStyle("""
                    -fx-background-color:#616161;
                    -fx-text-fill:white;-fx-font-weight:bold;
                    -fx-padding:10 24;-fx-background-radius:5;
-                   """); }
+                   """);
+    }
 
     public Scene getScene() { return scene; }
     public TextField getLoginField() { return loginField; }

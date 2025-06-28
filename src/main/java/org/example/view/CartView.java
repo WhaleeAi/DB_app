@@ -63,31 +63,32 @@ public class CartView {
                 new TableColumn<>("Сумма");
         cSum.setCellValueFactory(new PropertyValueFactory<>("totalPrice"));
 
-        TableColumn<TransactionProduct,Void> cDel =
-                new TableColumn<>("");      // колонка удаления
-        cDel.setCellFactory(col -> new DeleteCell());
+        TableColumn<TransactionProduct, Void> cDel = new TableColumn<>("");
+        cDel.setCellFactory(col -> new TableCell<TransactionProduct, Void>() {
+            private final Button btn = new Button("Удалить");
+
+            {
+                btn.setOnAction(e -> {
+                    TransactionProduct tp =
+                            getTableView().getItems().get(getIndex());
+                    CartController.getInstance().removeItem(tp);
+                });
+                setAlignment(Pos.CENTER);
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : btn);
+            }
+        });
+
 
         table.getColumns().addAll(cName,cQty,cPrice,cSum,cDel);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setPlaceholder(new Label("Корзина пуста"));
 
         return table;
-    }
-
-    private static class DeleteCell extends TableCell<TransactionProduct,Void>{
-        private final Button btn = new Button("Удалить");
-        DeleteCell(){
-            btn.setOnAction(e -> {
-                TransactionProduct tp = getTableView().getItems().get(getIndex());
-                CartController.getInstance().removeItem(tp);
-            });
-            setAlignment(Pos.CENTER);
-        }
-
-        @Override protected void updateItem(Void v, boolean empty){
-            super.updateItem(v, empty);
-            setGraphic(empty?null:btn);
-        }
     }
 
     private HBox buildBottomBar(){

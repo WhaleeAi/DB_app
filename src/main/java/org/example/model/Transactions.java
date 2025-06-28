@@ -29,7 +29,8 @@ public final class Transactions {
                     t.setId(rs.getInt("id"));
                     t.setCustomerId(rs.getInt("customer_id"));
                     Date d = rs.getDate("transaction_date");
-                    if (d != null) t.setDate(d.toLocalDate());
+                    if (d != null)
+                        t.setDate(d.toLocalDate());
                     t.setTotalQuantity(rs.getInt("total_quantity"));
                     t.setTotalSum(rs.getDouble("total_amount"));
                     t.setStatus(rs.getString("status"));

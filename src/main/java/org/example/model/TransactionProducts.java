@@ -45,7 +45,8 @@ public final class TransactionProducts extends Observable {
             tp.setTransactionId(txId);
             cache.add(tp);
 
-            setChanged(); notifyObservers(new RepoEvent<>(Type.ADD, tp));
+            setChanged();
+            notifyObservers(new RepoEvent<>(Type.ADD, tp));
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
@@ -71,7 +72,8 @@ public final class TransactionProducts extends Observable {
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, txId); ps.executeUpdate();
         } catch (SQLException e) { e.printStackTrace(); }
-        setChanged(); notifyObservers(new RepoEvent<>(Type.RELOAD, null));
+        setChanged();
+        notifyObservers(new RepoEvent<>(Type.RELOAD, null));
     }
 
     public enum Type { ADD, DELETE, RELOAD }

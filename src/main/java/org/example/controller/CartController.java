@@ -17,7 +17,7 @@ public class CartController {
     private final CartView view;
 
     private final TransactionProducts cartRepo = TransactionProducts.getInstance();
-    private final Transactions        txRepo   = Transactions.getInstance();
+    private final Transactions txRepo = Transactions.getInstance();
 
     private final int draftId;
 

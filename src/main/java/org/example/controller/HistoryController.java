@@ -39,6 +39,6 @@ public class HistoryController {
             Integer draftId = Session.getCurrentDraftId();
             new CartController(stage, draftId != null ? draftId : -1);
         });
-        view.btnProfile().setOnAction(e -> new ProfileController(stage, "admin"));
+        view.btnProfile().setOnAction(e -> new ProfileController(stage, "customer"));
     }
 }

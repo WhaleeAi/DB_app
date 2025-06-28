@@ -16,9 +16,9 @@ public class ProductsController {
     private final Stage stage;
     private final ProductsView view;
 
-    private final Products            prodRepo = Products.getInstance();
+    private final Products prodRepo = Products.getInstance();
     private final TransactionProducts cartRepo = TransactionProducts.getInstance();
-    private final Transactions        txRepo   = Transactions.getInstance();
+    private final Transactions txRepo = Transactions.getInstance();
 
     private final Map<Integer,Integer> qtyBuffer = new HashMap<>();
 
@@ -45,6 +45,7 @@ public class ProductsController {
         else qtyBuffer.put(p.getId(), q);
         view.table().refresh();
     }
+
     public int getQuantity(Product p){ return qtyBuffer.getOrDefault(p.getId(),0); }
 
     private void bindHandlers() {

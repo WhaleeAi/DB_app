@@ -7,7 +7,7 @@ import org.example.controller.LoginController;
 public class Main extends Application {
     @Override
     public void start(Stage stage){
-        new LoginController(stage);      // всё покажется само
+        new LoginController(stage);
         stage.setTitle("CRM-Demo");
         stage.show();
     }

@@ -13,12 +13,12 @@ public class AdminProductsController {
     private final Stage stage;
     private final AdminProductsView view;
 
-    private final Products            prodRepo = Products.getInstance();
+    private final Products prodRepo = Products.getInstance();
 
     public AdminProductsController(Stage stage) {
         INSTANCE = this;
         this.stage = stage;
-        this.view  = new AdminProductsView();
+        this.view = new AdminProductsView();
 
         view.table().setItems(FXCollections.observableArrayList(prodRepo.getAllProducts()));
 

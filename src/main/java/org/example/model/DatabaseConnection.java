@@ -16,9 +16,9 @@ public class DatabaseConnection {
             Class.forName("com.mysql.cj.jdbc.Driver");
             this.connection = DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (ClassNotFoundException e) {
-            System.err.println("MySQL JDBC Driver not found: " + e.getMessage());
+            System.err.println("JDBC-драйвер для подключения к базе данных не найден: " + e.getMessage());
         } catch (SQLException e) {
-            System.err.println("Connection failed: " + e.getMessage());
+            System.err.println("Соединение провалено: " + e.getMessage());
         }
     }
 
@@ -35,7 +35,7 @@ public class DatabaseConnection {
                 connection = DriverManager.getConnection(URL, USER, PASSWORD);
             }
         } catch (SQLException e) {
-            System.err.println("Error re-establishing connection: " + e.getMessage());
+            System.err.println("Ошибка при восстановлении соединения: " + e.getMessage());
         }
         return connection;
     }
@@ -46,7 +46,7 @@ public class DatabaseConnection {
                 connection.close();
             }
         } catch (SQLException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
+            System.err.println("Ошибка при остановке содеинения: " + e.getMessage());
         }
     }
 }
