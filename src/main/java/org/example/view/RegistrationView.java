@@ -28,7 +28,7 @@ public class RegistrationView {
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-background-color:#f4f4f4;");
 
-        Label title = new Label("Регистрация нового клиента");
+        Label title = new Label("Регистрация");
         title.setStyle("-fx-font-size:24px;-fx-font-weight:bold;-fx-text-fill:#333;");
 
         GridPane form = buildFormCard();

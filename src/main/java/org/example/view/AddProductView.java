@@ -9,13 +9,13 @@ import javafx.scene.paint.Color;
 
 public class AddProductView {
 
-    private final TextField     name    = new TextField();
+    private final TextField name = new TextField();
     private final TextField description = new TextField();
     private final TextField wholesalePrice = new TextField();
-    private final TextField retailPrice  = new TextField();
-    private final Button        setNameButton   = new Button("Добавить продукт");
-    private final Button        backToProds   = new Button("Вернуться");
-    private final Label         messageLabel  = new Label();
+    private final TextField retailPrice = new TextField();
+    private final Button setNameButton = new Button("Добавить продукт");
+    private final Button backToProds = new Button("Вернуться");
+    private final Label messageLabel = new Label();
 
     private final Scene scene;
 
@@ -25,7 +25,7 @@ public class AddProductView {
         root.setAlignment(Pos.CENTER);
         root.setStyle("-fx-background-color:#f4f4f4;");
 
-        Label title = new Label("Вход в систему");
+        Label title = new Label("Добавление товара");
         title.setStyle("-fx-font-size:24px;-fx-font-weight:bold;-fx-text-fill:#333;");
 
         GridPane form = buildFormCard();

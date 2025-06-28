@@ -106,7 +106,7 @@ public class CartView {
         return box;
     }
 
-    public Scene getScene()                { return scene; }
+    public Scene getScene() { return scene; }
     public TableView<TransactionProduct> table(){ return table; }
     public Label totalQtyLbl(){ return totalQtyLbl; }
     public Label totalSumLbl(){ return totalSumLbl; }

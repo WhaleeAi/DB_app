@@ -24,7 +24,6 @@ public class LoginController {
         view.loginButton().setOnAction(e -> tryLogin());
         view.signUpButton().setOnAction(
                 e -> new RegistrationController(stage));
-        view.getPasswordField().setOnAction(e -> tryLogin());
     }
 
     private void tryLogin() {

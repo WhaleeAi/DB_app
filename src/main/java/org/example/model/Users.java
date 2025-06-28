@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.Observable;
 
-public class Users extends Observable {
+public class Users {
 
     private static final Users INSTANCE = new Users();
 
@@ -29,9 +29,6 @@ public class Users extends Observable {
                 cache.add(u);
             }
 
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.RELOAD, null));
-
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -48,9 +45,6 @@ public class Users extends Observable {
             try (ResultSet keys = ps.getGeneratedKeys()) { if (keys.next()) u.setId(keys.getInt(1)); }
 
             cache.add(u);
-
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.ADD, u));
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
@@ -69,9 +63,6 @@ public class Users extends Observable {
             for (int i = 0; i < cache.size(); i++)
                 if (cache.get(i).getId() == u.getId()) { cache.set(i, u); break; }
 
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.UPDATE, u));
-
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -84,8 +75,6 @@ public class Users extends Observable {
             ps.executeUpdate();
 
             cache.removeIf(u -> u.getId() == id);
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.DELETE, id));
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
