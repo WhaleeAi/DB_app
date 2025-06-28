@@ -24,9 +24,10 @@ public final class TransactionProducts extends Observable {
 
         String sql = """
             SELECT tp.id, tp.product_id, tp.quantity,
-                   tp.purchase_price, tp.transaction_id, tp.total_sum
+              tp.purchase_price, tp.transaction_id, tp.total_sum,
+              p.name
               FROM transaction_products tp
-              JOIN transactions t ON tp.transaction_id = t.id
+              JOIN product p ON tp.product_id = p.id
              WHERE tp.transaction_id=?""";
 
         try (Connection c = DatabaseConnection.getInstance().getConnection();
@@ -102,11 +103,7 @@ public final class TransactionProducts extends Observable {
 
     public void clearByTransaction(int txId) {
         cache.removeIf(tp -> tp.getTransactionId() == txId);
-        String sql = "DELETE FROM transaction_products WHERE transaction_id=?";
-        try (Connection c = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setInt(1, txId); ps.executeUpdate();
-        } catch (SQLException e) { e.printStackTrace(); }
+
         setChanged();
         notifyObservers(new RepoEvent<>(Type.RELOAD, null));
     }

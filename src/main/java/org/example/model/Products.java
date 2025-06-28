@@ -2,9 +2,8 @@ package org.example.model;
 
 import java.sql.*;
 import java.util.*;
-import java.util.Observable;
 
-public final class Products extends Observable {
+public final class Products {
 
     private static final Products INSTANCE = new Products();
     public static Products getInstance() { return INSTANCE; }
@@ -37,8 +36,6 @@ public final class Products extends Observable {
                 p.setWholesalePrice(rs.getDouble("wholesale_price"));
                 cache.add(p);
             }
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.RELOAD, null));
 
         } catch (SQLException e) { e.printStackTrace(); }
     }
@@ -56,9 +53,6 @@ public final class Products extends Observable {
             try (ResultSet k = ps.getGeneratedKeys()) { if (k.next()) p.setId(k.getInt(1)); }
             cache.add(p);
 
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.ADD, p));
-
         } catch (SQLException e) { e.printStackTrace(); }
     }
 
@@ -75,9 +69,6 @@ public final class Products extends Observable {
 
             for (int i=0;i<cache.size();i++)
                 if (cache.get(i).getId()==p.getId()) { cache.set(i,p); break; }
-
-            setChanged();
-            notifyObservers(new RepoEvent<>(Type.UPDATE, p));
 
         } catch (SQLException e) { e.printStackTrace(); }
     }

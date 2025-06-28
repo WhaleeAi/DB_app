@@ -2,9 +2,8 @@ package org.example.model;
 
 import java.sql.*;
 import java.util.*;
-import java.util.Observable;
 
-public class Customers extends Observable {
+public class Customers {
 
     private static final Customers INSTANCE = new Customers();
     public static Customers getInstance() { return INSTANCE; }
@@ -32,8 +31,6 @@ public class Customers extends Observable {
             rs.close();
             stmt.close();
 
-            setChanged();
-            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -62,8 +59,6 @@ public class Customers extends Observable {
                 cache.add(customer);
             }
 
-            setChanged();
-            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -92,8 +87,6 @@ public class Customers extends Observable {
                 }
             }
 
-            setChanged();
-            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -110,8 +103,6 @@ public class Customers extends Observable {
                 cache.removeIf(customer -> customer.getId() == id);
             }
 
-            setChanged();
-            notifyObservers(new Users.RepoEvent<>(Users.Type.RELOAD, null));
         } catch (SQLException e) {
             e.printStackTrace();
         }

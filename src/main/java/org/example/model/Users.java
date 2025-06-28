@@ -2,10 +2,9 @@ package org.example.model;
 
 import java.sql.*;
 import java.util.*;
-import java.util.Observable;   // <—- Java 9+: добавьте --add-opens при запуске
-import java.util.Observer;
+import java.util.Observable;
 
-public class Users extends Observable implements Observer {
+public class Users extends Observable {
 
     private static final Users INSTANCE = new Users();
 
@@ -89,11 +88,6 @@ public class Users extends Observable implements Observer {
             notifyObservers(new RepoEvent<>(Type.DELETE, id));
 
         } catch (SQLException e) { e.printStackTrace(); }
-    }
-
-    @Override public void update(Observable src, Object arg) {
-        setChanged();
-        notifyObservers(arg);
     }
 
     public enum Type { ADD, UPDATE, DELETE, RELOAD }

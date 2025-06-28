@@ -8,7 +8,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage){
         new LoginController(stage);
-        stage.setTitle("CRM-Demo");
+        stage.setTitle("Товары.ру");
         stage.show();
     }
     public static void main(String[] args) { launch(args); }

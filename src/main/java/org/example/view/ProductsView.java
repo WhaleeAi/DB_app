@@ -75,7 +75,8 @@ public class ProductsView {
             ProductsController.getInstance().updateQuantity(p,d);
         }
 
-        @Override protected void updateItem(Void v, boolean empty){
+        @Override
+        protected void updateItem(Void v, boolean empty){
             super.updateItem(v, empty);
             setGraphic(empty?null:getGraphic());
             if(!empty){
